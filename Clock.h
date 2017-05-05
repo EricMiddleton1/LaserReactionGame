@@ -14,6 +14,7 @@ void Clock_init();
 
 void Clock_start();
 void Clock_stop();
+void Clock_restart();
 
 uint32_t Clock_getMillis();
 uint32_t Clock_getMicros();

@@ -36,6 +36,11 @@ void Clock_stop() {
     TimerDisable(TIMER0_BASE, TIMER_A);
 }
 
+void Clock_restart() {
+    Clock_stop();
+    Clock_start();
+}
+
 uint32_t Clock_getMillis() {
     TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
     uint32_t copyTime = __millis;

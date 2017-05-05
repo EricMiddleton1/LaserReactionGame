@@ -15,8 +15,13 @@
 
 #include "Clock.h"
 #include "LEDPanel.h"
+#include "Random.h"
 
-#define LED_COUNT   (2)
+#define LED_COUNT   (9)
+#define RAND_START  (4)
+#define LED_START   (9)
+
+#define NUM_ROUNDS  (8)
 
 #define LED_PIN     GPIO_PIN_3
 #define LED_PORT    GPIO_PORTE_BASE
@@ -47,33 +52,34 @@ int main()
     Clock_start();
 
     //LED Panel
-    int led = 0;
     LEDPanel_init();
-    LEDPanel_setChannel(led);
+
+    //RNG
+    Random_init(LED_COUNT, RAND_START);
 
     for (;;) {
-        int value;
-        if((value = LEDPanel_detect()) > 0) {
-            char buffer[64];
-            UART_puts("Input detected: ");
-            UART_puts(itoa(value, buffer, 10));
-            UART_puts("\r\n");
+        LEDPanel_setChannel(LED_START);
 
-            led = (led + 1) % LED_COUNT;
-            LEDPanel_setChannel(led);
+        //Wait for start
+        while(LEDPanel_detect() == 0);
 
-            //Clock_waitMicros(100000);
+        UART_puts("New Game\r\n");
 
-            //LEDPanel_detect();
+        //Start game
+        Clock_restart();
+        int i;
+        for(i = 0; i < NUM_ROUNDS; i++) {
+            LEDPanel_setChannel(Random_getNext());
 
-/*
-            //Flush the detector
-            uint32_t endTime = Clock_getMicros() + 1000;
-            while(Clock_getMicros() < endTime) {
-                LEDPanel_detect();
-            }
-*/
+            while(LEDPanel_detect() == 0);
         }
+
+        uint32_t time = Clock_getMillis();
+
+        char buffer[64];
+        UART_puts("Time: ");
+        UART_puts(itoa(time, buffer, 10));
+        UART_puts("\r\n\r\n");
     }
 
     return 0;
@@ -87,22 +93,7 @@ void UART_puts(const char* str) {
     }
 }
 
-uint16_t ADC_read() {
-    //Trigger single reading
-    ADCProcessorTrigger(ADC0_BASE, 3);
-
-    //Read the data
-    uint32_t value;
-
-//    while(!ADCIntStatus(ADC0_BASE, 3, false));
-    int32_t count;
-    while((count = ADCSequenceDataGet(ADC0_BASE, 3, &value)) < 1);
-
-    return value;
-}
-
-char *
-itoa (int value, char *result, int base)
+char *itoa (int value, char *result, int base)
 {
     // check that the base if valid
     if (base < 2 || base > 36) { *result = '\0'; return result; }

@@ -50,7 +50,7 @@ void LEDPanel_init() {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
 
     //Configure ADC
-    ADCHardwareOversampleConfigure(ADC0_BASE, 4);
+    ADCHardwareOversampleConfigure(ADC0_BASE, 0);
     ADCSequenceDisable(ADC0_BASE, 3);
     ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_ALWAYS, 0);
     ADCSequenceEnable(ADC0_BASE, 3);
@@ -89,7 +89,7 @@ void LEDPanel_setChannel(uint8_t channel) {
 
     TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
 
-    Clock_waitMicros(1000);
+    Clock_waitMicros(10000);
     __detect = 0;
 }
 
